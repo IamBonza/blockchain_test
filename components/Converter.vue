@@ -6,14 +6,25 @@
             <div class="ammount">
               <input type="number" v-model="amount">
             </div>
-            <!-- <div></div>
-            <div></div> -->
           </div>
           <div class="currencies-block">
             <div class="currency">
-              <b-select v-if="!loading" v-model="firstSelectedCurencyId" @input="onCurrenciesPairChange">
-                <option v-for="(curency) in fisrtSelectorAvailableCurrencies" :key="curency.id" :value="curency.id">{{curency.name}}</option>
+              <template v-if="loading">
+                <div class="loading-block"></div>
+              </template>
+              <template v-else>
+                 <b-select v-if="!loading" v-model="firstSelectedCurencyId" @input="onCurrenciesPairChange">
+                <option v-for="(curency) in fisrtSelectorAvailableCurrencies" :key="curency.id" :value="curency.id">
+                  <template v-if="curency.id === 'tether'">
+                      USD
+                  </template>
+                  <template v-else>
+                      {{curency.name}}
+                  </template>
+                </option>
               </b-select>
+              </template>
+             
             </div>
             <div class="switcher">
               <button class="switcher-btn" @click="switchCurrencies">
@@ -23,7 +34,11 @@
               </button>
             </div>
             <div class="currency">
-              <b-select v-if="!loading" v-model="secondSelectedCurencyId" @input="onCurrenciesPairChange">
+               <template v-if="loading">
+                <div class="loading-block"></div>
+              </template>
+              <template v-else>
+                <b-select v-if="!loading" v-model="secondSelectedCurencyId" @input="onCurrenciesPairChange">
                 <option v-for="curency in vsAvailableCruncies" :key="curency.id" :value="curency.id">
                   <template v-if="curency.id === 'tether'">
                       USD
@@ -33,19 +48,42 @@
                   </template>
                 </option>
               </b-select>
-              
+              </template>
             </div>
           </div>
            <client-only>
             <div class="result-block">
-            
               <div v-if="firstSelectedCurrency" class="result" style="text-align:right">
-                {{amount}} {{firstSelectedCurencyId}} ({{firstSelectedCurrency.symbol}})
+                {{amount}}
+                 <template v-if="firstSelectedCurrency.name === 'Tether'">
+                      <span>Usd</span>
+                  </template>
+                  <template v-else>
+                      <span>{{firstSelectedCurrency.name}}</span>
+                  </template>
+                <template v-if="firstSelectedCurrency.name === 'Tether'">
+                      <span>(USD)</span>
+                  </template>
+                  <template v-else>
+                      <span>({{firstSelectedCurrency.symbol}})</span>
+                  </template>
               </div>
               
               <div style="text-align:center">=</div>
               <div v-if="secondSelectedCurrency" class="result" style="text-align:left">
-                {{currentAmount}} {{secondSelectedCurencyId}} ({{secondSelectedCurrency.symbol}})
+                {{currentAmount}}
+                <template v-if="secondSelectedCurrency.name === 'Tether'">
+                      <span>Usd</span>
+                  </template>
+                  <template v-else>
+                      <span>{{secondSelectedCurrency.name}}</span>
+                  </template>
+                 <template v-if="secondSelectedCurrency.name === 'Tether'">
+                      <span>(USD)</span>
+                  </template>
+                  <template v-else>
+                      <span>({{secondSelectedCurrency.symbol}})</span>
+                  </template>
               </div>
               <div v-else>
                 Nothing is selected
@@ -54,7 +92,7 @@
           </client-only>
         </div>
     </div>
-    <client-only><chart :data='chartData' /></client-only>
+    <client-only><chart :data='chartData' :secondData="firstSelectedCurrency" /></client-only>
   </div>
 </template>
 
@@ -64,7 +102,7 @@ export default {
   data() {
     return {
       loading: true,
-      amount: 10,
+      amount: 1,
       chartData: null,
       availableCurencies: ['bitcoin', 'ethereum', 'tether'],
       vsCurrenciesShorts: {
@@ -90,6 +128,7 @@ export default {
         })
         return filteredAvailableCurencies
       },
+
       fisrtSelectorAvailableCurrencies(){
         if(typeof this.availableCurencies[0] === 'string') {
           return []
@@ -100,8 +139,10 @@ export default {
         return filteredAvailableCurencies
       },
       currentAmount() {
-        return this.amount * this.currentPrice
+        const currentAmount =this.amount * this.currentPrice
+        return currentAmount.toFixed(4)
       },
+
       firstSelectedCurrency() {
         if(typeof this.availableCurencies[0] === 'string') {
           return []
@@ -109,9 +150,11 @@ export default {
         const currencyObject = this.availableCurencies.find((c)=> {
           return c.id === this.firstSelectedCurencyId
         })
-        console.log(currencyObject)
+        const currencyShortToUpperCase = currencyObject.symbol.toUpperCase()
+        currencyObject.symbol = currencyShortToUpperCase
         return currencyObject
       },
+
       secondSelectedCurrency() {
           if(typeof this.availableCurencies[0] === 'string') {
             return []
@@ -119,7 +162,6 @@ export default {
           const currencyObject = this.availableCurencies.find((c)=> {
             return c.id === this.secondSelectedCurencyId
           })
-
           return currencyObject
       },
 
@@ -156,10 +198,10 @@ export default {
     async mounted() {
       await this.getDataOfCurencies()
       await this.getChartData()
+      console.log(this.firstSelectedCurrency)
+
       this.currentPrice = await this.getCurrentPriceOfCurrencyPair({currencyId: this.firstSelectedCurencyId, vsCurrency:this.vsCurrenciesShorts[this.secondSelectedCurencyId]})
-      
       this.loading = false
-      console.log(this.currentPrice)
     }
 
 }
@@ -201,7 +243,7 @@ export default {
  .ammount > input {
    background-color: rgb(255, 255, 255);
     border: 1px solid rgb(207, 214, 228);
-    border-radius: 8px;
+    border-radius: 4px;
     box-sizing: border-box;
     color: rgb(0, 0, 0);
     max-width: 100%;
@@ -248,6 +290,10 @@ export default {
     cursor: pointer;
 }
 
+.switcher {
+  margin: 0 16px 0 16px;
+}
+
 
 .switcher-btn {
     transition: background 0.2s ease-in-out 0s;
@@ -284,5 +330,11 @@ export default {
 }
 .result-block > div:last-child {
     width: calc(50% - 25px);
+}
+.loading-block {
+  width: 100px;
+  height: 40px;
+  background-color: #fff;
+  border-radius: 4px;
 }
 </style>
