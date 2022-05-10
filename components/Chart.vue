@@ -93,7 +93,7 @@ export default {
         datasets: [
           {
             label: 'График изменения цены за 7 дней',
-            backgroundColor: '#f87979',
+            backgroundColor: 'rgb(16,112,224)',
             data: this.data
           }
         ]
