@@ -40,7 +40,7 @@
             <div class="result-block">
             
               <div v-if="firstSelectedCurrency" class="result" style="text-align:right">
-                {{amount}} {{firstSelectedCurencyId}} ({{firstSelectedCurrency.symbol.toUpperCase()}})
+                {{amount}} {{firstSelectedCurencyId}} ({{firstSelectedCurrency.symbol}})
               </div>
               
               <div style="text-align:center">=</div>
