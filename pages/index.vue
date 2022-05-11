@@ -1,10 +1,6 @@
 <template>
   <div>
     <converter/>
-    <div class="currency-selector">
-      <div class="btc"></div>
-      <div class="eth"></div>
-    </div>
   </div>
 </template>
 
@@ -13,12 +9,12 @@
 import Converter from '~/components/Converter.vue'
 
 export default {
-  components: { 
-    Converter, 
+  components: {
+    Converter,
     },
   name: 'IndexPage'
 }
-</script> 
+</script>
 
 <style>
 * {

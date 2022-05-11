@@ -13,7 +13,7 @@
                 <div class="loading-block"></div>
               </template>
               <template v-else>
-                 <b-select v-if="!loading" v-model="firstSelectedCurencyId" @input="onCurrenciesPairChange">
+                 <b-select v-if="!loading" v-model="firstSelectedCurencyId" @input="onCurrenciesPairChange" class="select-width">
                 <option v-for="(curency) in fisrtSelectorAvailableCurrencies" :key="curency.id" :value="curency.id">
                   <template v-if="curency.id === 'tether'">
                       USD
@@ -24,11 +24,11 @@
                 </option>
               </b-select>
               </template>
-             
+
             </div>
             <div class="switcher">
               <button class="switcher-btn" @click="switchCurrencies">
-                <span style="display:flex;align-items-center">
+                <span style="display:flex;align-items:center">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" height="16px" width="16px" viewBox="0 0 24 24" class="sc-16r8icm-0 coGWQa"><path d="M6 16H20M20 16L17 19M20 16L17 13" stroke="currentColor" stroke-width="2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"></path><path d="M18 8H4M4 8L7 11M4 8L7 5" stroke="currentColor" stroke-width="2" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"></path></svg>
                 </span>
               </button>
@@ -38,7 +38,7 @@
                 <div class="loading-block"></div>
               </template>
               <template v-else>
-                <b-select v-if="!loading" v-model="secondSelectedCurencyId" @input="onCurrenciesPairChange">
+                <b-select v-if="!loading" v-model="secondSelectedCurencyId" @input="onCurrenciesPairChange" class="select-width">
                 <option v-for="curency in vsAvailableCruncies" :key="curency.id" :value="curency.id">
                   <template v-if="curency.id === 'tether'">
                       USD
@@ -68,7 +68,7 @@
                       <span>({{firstSelectedCurrency.symbol}})</span>
                   </template>
               </div>
-              
+
               <div style="text-align:center">=</div>
               <div v-if="secondSelectedCurrency" class="result" style="text-align:left">
                 {{currentAmount}}
@@ -115,7 +115,7 @@ export default {
       currentPrice: 0
     }
   },
-  components: { 
+  components: {
     Chart: () => {if(process.client){return import('./Chart.vue') }}
     },
     computed: {
@@ -170,9 +170,11 @@ export default {
     methods: {
       ...mapActions('coingecko', ['getChartDataByTwoCurrencies', 'getCurencyDataById', 'getCurrentPriceOfCurrencyPair']),
       async getChartData() {
-        const result = await this.getChartDataByTwoCurrencies()
+        const currencyId = this.firstSelectedCurencyId
+        const vsCurrency = this.vsCurrenciesShorts[this.secondSelectedCurencyId]
+        const result = await this.getChartDataByTwoCurrencies({currencyId, vsCurrency})
         const chartData = result.map(element => {
-          return Math.floor(element[1])
+          return element[1]
         });
         chartData.splice(-2, 1)
         this.chartData = chartData
@@ -192,14 +194,13 @@ export default {
       async onCurrenciesPairChange() {
         this.loading = true
         this.currentPrice = await this.getCurrentPriceOfCurrencyPair({currencyId: this.firstSelectedCurencyId, vsCurrency:this.vsCurrenciesShorts[this.secondSelectedCurencyId]})
+        await this.getChartData()
         this.loading = false
       }
     },
     async mounted() {
       await this.getDataOfCurencies()
       await this.getChartData()
-      console.log(this.firstSelectedCurrency)
-
       this.currentPrice = await this.getCurrentPriceOfCurrencyPair({currencyId: this.firstSelectedCurencyId, vsCurrency:this.vsCurrenciesShorts[this.secondSelectedCurencyId]})
       this.loading = false
     }
@@ -212,12 +213,22 @@ export default {
     box-sizing: border-box;
   }
 
+.select-width {
+  width: 120px;
+}
+.select-width span {
+  width: 100%;
+}
+.select-width select {
+  width: 100%;
+}
+
   select {
     width: 100px;
   }
  .converter-container {
      width: 100%;
-     display: flex;     
+     display: flex;
  }
  .converter {
     background: rgb(210, 208, 208);
@@ -268,7 +279,6 @@ export default {
 
 .currencies-block {
   display: flex;
-  flex-direction: row;
   justify-content: center;
   align-items: center;
 }
@@ -332,9 +342,18 @@ export default {
     width: calc(50% - 25px);
 }
 .loading-block {
-  width: 100px;
+  width: 120px;
   height: 40px;
   background-color: #fff;
   border-radius: 4px;
+}
+
+@media (max-width: 800px) {
+  .currencies-block {
+    flex-direction: column;
+  }
+  .currencies-block > div:not(:last-child) {
+    margin-bottom: 16px;
+  }
 }
 </style>
