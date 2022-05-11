@@ -59,7 +59,6 @@
 </template>
 
 <script>
-import PieChart from '~/components/CaseChart';
 import {mapActions, mapState} from 'vuex'
 export default {
   components: {
@@ -226,7 +225,7 @@ export default {
     font-weight: normal;
     display: inline-block;
     border: 1px solid transparent;
-    margin: 0px;
+    margin: 0;
     text-align: center;
     white-space: nowrap;
     cursor: pointer;
